@@ -703,6 +703,11 @@ function drawDeviceLinks(node, treeDepth) {
             for (let i = 0; i < node.devices.length; i++) {
                 let devicePos = getDevicePosition(getDeviceIndexById(node.devices[i]), treeDepth);
                 let nodeOffsetX = 0;
+                if (node.x < devicePos.x) {
+                    nodeOffsetX = 5;
+                } else if (node.x > devicePos.x) {
+                    nodeOffsetX = -5;
+                }
                 deviceLinksGroup.append("line")
                     .attr("class", "device-link")
                     .attr("stroke", "black")
@@ -1156,7 +1161,6 @@ function getExpressionTreeDevices(node) {
             childrenExpression.push(getExpressionTreeDevices(node._children[i]));
         }
     } else {
-        console.log(node);
         if (node.devices && node.devices.length > 1) {
             let nodes = [];
             for (let i = 0; i < node.devices.length; i++) {

@@ -39,6 +39,7 @@ function selectOperator() {
 $("select#formOperatorValue").change(function() {
     selectedNode.value = $("select#formOperatorValue").val();
     update();
+    updateRecovery();
 });
 
 function selectNode() {
@@ -133,6 +134,7 @@ function deleteNode() {
     });
     target.parent.children = children;
     update(root);
+    updateRecovery();
     deselect();
 }
 
@@ -152,6 +154,7 @@ function nodeDeviceListChange(el, id) {
         }
     }
     update();
+    updateRecovery();
 }
 
 $("select#formNodeValue").change(function() {
@@ -169,21 +172,25 @@ $("select#formNodeValue").change(function() {
     }
     $("input#formNodeScore").val(selectedNode.score);
     update();
+    updateRecovery();
 });
 
 $("input#formNodeLabel").change(function() {
     selectedNode.label = $("input#formNodeLabel").val();
     update();
+    updateRecovery();
 });
 
 $("input#formNodeId").change(function() {
     selectedNode.nodeId = $("input#formNodeId").val();
     update();
+    updateRecovery();
 });
 
 $("input#formNodeScore").change(function() {
     selectedNode.score = $("input#formNodeScore").val();
     update();
+    updateRecovery();
 });
 
 function generateRandomNodeId() {
@@ -203,11 +210,13 @@ function selectAccount() {
 $("input#formAccountName").change(function() {
     selectedNode.label = $("input#formAccountName").val();
     update();
+    updateRecovery();
 })
 
 $("input#formAccountNodeId").change(function() {
     selectedNode.nodeId = $("input#formAccountNodeId").val();
     update();
+    updateRecovery();
 })
 
 function selectGraph() {
@@ -241,6 +250,7 @@ $("button#formGraphBtnImport").click(function() {
     }
     target.parent.children = children;
     update(root);
+    updateRecovery();
     deselect();
 });
 
@@ -298,6 +308,7 @@ $("button#btnAddNode").click(function() {
     child.children = [];
     selectedNode.children.push(child);
     update(root);
+    updateRecovery();
 });
 
 $("button#btnDeleteNode").click(function() {
@@ -310,6 +321,7 @@ $("button#btnDeleteNode").click(function() {
     });
     target.parent.children = children;
     update(root);
+    updateRecovery();
     deselect();
 });
 
@@ -387,6 +399,7 @@ $("button#formDeviceBtnAdd").click(function() {
     $("input#formDeviceName").val("");
     updateDeviceList();
     update();
+    updateRecovery();
 });
 
 // Import / Export
@@ -405,6 +418,7 @@ $("button#btnImport").click(function() {
     // Call twice to get Ids
     update(root);
     alignGraph();
+    updateRecovery();
 });
 
 $("input#formImportFileInput").change(function(event) {
@@ -439,6 +453,39 @@ function downloadJSON() {
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
 };
+
+function updateRecovery() {
+    let expressionTree = getExpressionTreeDevices(root);
+    let expressionTreeString = stringifyExpressionTreeHTML(expressionTree);
+
+    let expressionTreeResolved = resolveExpressionTree(expressionTree);
+    let expressionTreeResolvedString = stringifyExpressionTreeHTML(expressionTreeResolved);
+
+    let expressionTreeSimplified = simplifyExpressionTree(expressionTreeResolved);
+    let expressionTreeSimplifiedString = stringifyExpressionTreeHTML(expressionTreeSimplified);
+
+    let expressionTreeAbsorption = applyAbsorptionExpressionTree(expressionTreeSimplified);
+    let expressionTreeAbsorptionString = stringifyExpressionTreeHTML(expressionTreeAbsorption);
+    let score = calculateAccessibilityScore(expressionTreeAbsorption);
+
+    let scoreTmp = calculateAccessibilityScore(expressionTreeSimplified);
+
+    $("p#formScoringViewExpressionsVal").html("<b>Horn clause:</b><br/>" + expressionTreeString +
+        "<br/><br/><b>Disj. normal form:</b><br/>" + expressionTreeResolvedString +
+        "<br/><br/><b>Simplified (all possible access method combinations):</b><br/>" + expressionTreeSimplifiedString +
+        "<br/><br/><b>Absorption (least required access methods):</b><br/>" + expressionTreeAbsorptionString + "<br/>Score: " + score + " tmp: " + scoreTmp
+    );
+}
+
+$("select#formScoringView").change(function() {
+    if ($("select#formScoringView").val() === "Recovery") {
+
+        updateRecovery();
+        $("div#formScoringViewExpressions").show();
+    } else if ($("select#formScoringView").val() === "Security") {
+        $("div#formScoringViewExpressions").hide();
+    }
+});
 
 
 update(root);

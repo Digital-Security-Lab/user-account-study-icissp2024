@@ -57,7 +57,6 @@ $("button#formViewResetButton").click(function() {
 });
 
 $("select#formViewShowScores").change(function() {
-    console.log("test");
     document.Graph.settings.showScore = $("select#formViewShowScores").val();
     refreshGraph();
 });
